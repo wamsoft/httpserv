@@ -335,15 +335,15 @@ private:
 			if (!WindowClass)
 				TVPThrowExceptionMessage(TJS_W("register window class failed."));
 		}
-		HWND hwnd = ::CreateWindowExW(0, (LPCWSTR)MAKELONG(WindowClass, 0), TJS_W("SimpleHHTPServer Message"),
+		HWND hwnd = ::CreateWindowExW(0, (LPCWSTR)WindowClass, TJS_W("SimpleHHTPServer Message"),
 									  0, 0, 0, 1, 1, HWND_MESSAGE, NULL, hinst, NULL);
 		if (!hwnd) TVPThrowExceptionMessage(TJS_W("create message window failed."));
-		::SetWindowLong(hwnd, GWL_USERDATA, (LONG)this);
+		::SetWindowLongPtr(hwnd, GWLP_USERDATA, (tjs_intptr_t)this);
 		return hwnd;
 	}
 	static LRESULT WINAPI WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 		if (msg == WM_HTTP_REQUEST) {
-			SelfClass *self = (SelfClass*)(::GetWindowLong(hwnd, GWL_USERDATA));
+			SelfClass *self = (SelfClass*)(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			PwRequestResponse *rr = (PwRequestResponse*)lp;
 			if (self && rr) self->onRequest(rr);
 			if (rr) rr->done();
@@ -363,7 +363,7 @@ public:
 	}
 	~SimpleHTTPServer() {
 		if (message) {
-			::SetWindowLong(message, GWL_USERDATA, 0);
+			::SetWindowLongPtr(message, GWLP_USERDATA, 0);
 			::DestroyWindow(message);
 		}
 		message = NULL;
